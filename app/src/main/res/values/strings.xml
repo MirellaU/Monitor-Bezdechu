@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Monitor Bezdechu</string>
+    <string name="bluetooth_on">Włącz bluetooth</string>
+    <string name="find_devices">Wyszukaj urządzenia</string>
+    <string name="none_found">Nie znaleziono urządzeń</string>
+    <string name="linked">Połączono</string>
+    <string name="not_linked">Nie połączono</string>
+</resources>
