@@ -233,16 +233,16 @@ public class DataActivity extends AppCompatActivity {
                                         dataInt[j]=packetBytes[j];}
 
                                     Log.d(TAG,Arrays.toString(dataInt));
-
-                                    for (int k : dataInt)
-                                    {
-                                        airFlowTab.add(k);
-                                    }
-                                    SendArray("AIRFLOW_VALUE", airFlowTab, airFlowIntent);
-
-                                    dataInt = null;
-                                    airFlowTab.clear();
                                 }
+
+                                for (int k : dataInt)
+                                {
+                                    airFlowTab.add(k);
+                                }
+                                SendArray("AIRFLOW_VALUE", airFlowTab, airFlowIntent);
+
+                                dataInt = null;
+                                airFlowTab.clear();
 //                                if(b == delimiter)
 //                                {
 //                                    byte[] encodedBytes = new byte[readBufferPosition];
@@ -261,18 +261,20 @@ public class DataActivity extends AppCompatActivity {
 //                                        }
 //                                    });
 //                                }
-                                else
-                                {
-                                    Log.d(TAG,"Something gone wrong");
-                                    readBuffer[readBufferPosition++] = b;
-                                }
+//                                else{
+//                                    Log.d(TAG,"Something gone wrong");
+//                                    readBuffer[readBufferPosition++] = b;
+//                                }
                             }
                         }
+                        workerThread.sleep(1000);
                     }
                     catch (IOException ex)
                     {
                         Log.d(TAG,"Stop the thread");
                         stopWorker = true;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
                 }
             }
