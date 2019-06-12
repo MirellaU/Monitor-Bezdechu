@@ -8,6 +8,7 @@ import android.graphics.Color;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -35,6 +36,8 @@ public class AirFlowChart extends AppCompatActivity {
     LineChart chart;
     //@BindView(R.id.airFlow_chart)
     LineChart airFlow_chart;
+    TextView pick;
+    TextView pick_number;
 
     private BroadcastReceiver airFlowReceiver = new BroadcastReceiver() {
         @Override
@@ -87,17 +90,33 @@ public class AirFlowChart extends AppCompatActivity {
     private void addDetectedEntry() {
 
         ArrayList <Double> hann = HannWindow();
-        ArrayList <Double> splot = new ArrayList<Double>((Collections.nCopies(airFlowTab.size(), 0.0)));
-        double wynik=0;
-        for(int k=0; k<airFlowTab.size();k++){
-            for(int n=0; n<airFlowTab.size();n++){
-                wynik =+ airFlowTab.get(n)*hann.get(n-k);
-                splot.set(k,wynik);
-            }
-        }
-        //splot = convolve(airFlowTab, hann);
-        int liczba_pikow = PickDetection(splot);
-        Log.d(TAG,"Detekcja pików: "+liczba_pikow);
+        ArrayList <Double> splot = new ArrayList<Double>();
+//        double wynik=0;
+//        for(int n=0; n<airFlowTab.size();n++){
+//            for(int k=0; k<airFlowTab.size();k++){
+//                wynik =+ airFlowTab.get(k)*hann.get(n-k);
+//                splot.add(wynik);
+//            }
+//        }
+
+//        for (int i=0;i<airFlowTab.size();i++){
+//            hann.add(hann.size()+i,0.0);
+//        }
+//         //convolution
+//        int end = 0;
+//        while (end < airFlowTab.size()) {
+//            double sum = 0.0;
+//            for (int i = 0; i <airFlowTab.size(); i++)
+//            {
+//                sum += airFlowTab.get(i)*hann.get(end+i);
+//            }
+//            splot.add(end,sum);
+//            end = end+1;
+//        }
+
+//        int liczba_pikow = PickDetection(splot);
+//        Log.d(TAG,"Detekcja pików: "+liczba_pikow);
+//        pick_number.setText(liczba_pikow);
 //        LineData data = airFlow_chart.getData();
 //
 //        if (data == null) {
@@ -149,22 +168,25 @@ public class AirFlowChart extends AppCompatActivity {
         ButterKnife.bind(this);
 
         chart=(LineChart) findViewById(R.id.chart);
-        airFlow_chart=(LineChart) findViewById(R.id.airFlow_chart);
+        pick = findViewById(R.id.pick);
+        pick_number = findViewById(R.id.pick_number);
+
+        //airFlow_chart=(LineChart) findViewById(R.id.airFlow_chart);
 
         airFlowIntentFilter = new IntentFilter("AirFlowTab");
 
         chart.setKeepPositionOnRotation(true);
-        airFlow_chart.setKeepPositionOnRotation(true);
+//        airFlow_chart.setKeepPositionOnRotation(true);
 
         chart.getDescription().setEnabled(true);
         chart.getDescription().setText("");
-        airFlow_chart.getDescription().setEnabled(true);
-        airFlow_chart.getDescription().setText("");
+  //      airFlow_chart.getDescription().setEnabled(true);
+    //    airFlow_chart.getDescription().setText("");
 
         LineData data = new LineData();
         chart.setData(data);
         LineData data2 = new LineData();
-        airFlow_chart.setData(data2);
+        //airFlow_chart.setData(data2);
 
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setDrawGridLines(false); // no grid lines
@@ -182,23 +204,33 @@ public class AirFlowChart extends AppCompatActivity {
         xAxis.setDrawGridLines(false); //no grid lines
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM); //x axis on the bottom of chart
 
-        YAxis leftTiltAxis = airFlow_chart.getAxisLeft();
-        leftTiltAxis.setDrawGridLines(false); // no grid lines
-        leftTiltAxis.setDrawZeroLine(true);   //draw a zero line
-        leftTiltAxis.setAxisMinimum(0f); // start at -180
-        leftTiltAxis.setAxisMaximum(100f); // the axis maximum is 180
-
-        YAxis rightTiltAxis = airFlow_chart.getAxisRight();
-        rightTiltAxis.setDrawGridLines(false); // no grid lines
-        rightTiltAxis.setDrawZeroLine(true);   //draw a zero line
-        rightTiltAxis.setAxisMinimum(0f); // start at -180
-        rightTiltAxis.setAxisMaximum(100f); // the axis maximum is 180
-
-        XAxis xTiltAxis = airFlow_chart.getXAxis();
-        xTiltAxis.setDrawGridLines(false); //no grid lines
-        xTiltAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+//        YAxis leftTiltAxis = airFlow_chart.getAxisLeft();
+//        leftTiltAxis.setDrawGridLines(false); // no grid lines
+//        leftTiltAxis.setDrawZeroLine(true);   //draw a zero line
+//        leftTiltAxis.setAxisMinimum(0f); // start at -180
+//        leftTiltAxis.setAxisMaximum(100f); // the axis maximum is 180
+//
+//        YAxis rightTiltAxis = airFlow_chart.getAxisRight();
+//        rightTiltAxis.setDrawGridLines(false); // no grid lines
+//        rightTiltAxis.setDrawZeroLine(true);   //draw a zero line
+//        rightTiltAxis.setAxisMinimum(0f); // start at -180
+//        rightTiltAxis.setAxisMaximum(100f); // the axis maximum is 180
+//
+//        XAxis xTiltAxis = airFlow_chart.getXAxis();
+//        xTiltAxis.setDrawGridLines(false); //no grid lines
+//        xTiltAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 
         registerReceiver(airFlowReceiver, airFlowIntentFilter);
+    }
+
+    public static int[] addPos(int[] a, int pos, int num) {
+        int[] result = new int[a.length];
+        for(int i = 0; i < pos; i++)
+            result[i] = a[i];
+        result[pos] = num;
+        for(int i = pos + 1; i < a.length; i++)
+            result[i] = a[i - 1];
+        return result;
     }
 
     ArrayList<Double> Sin (ArrayList<Double> airFlowTab1) {
@@ -220,8 +252,8 @@ public class AirFlowChart extends AppCompatActivity {
         double b = 0.174;
         double Nn = Math.round((4 / b));
         if (Nn%2==0) {
-            Nn =+ Nn;
-        }
+            Nn = Nn+1;
+        } else {Nn=Nn;}
         int N=(int)Nn;
         Log.d(TAG, String.valueOf(Nn));
         Log.d(TAG, String.valueOf(N));

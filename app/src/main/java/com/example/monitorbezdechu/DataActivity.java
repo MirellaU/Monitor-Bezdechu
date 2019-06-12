@@ -209,40 +209,35 @@ public class DataActivity extends AppCompatActivity {
 
         workerThread = new Thread(new Runnable()
         {
-            public void run()
+            public void run() //tu zaczyna się odbiór danych
             {
-                Log.d(TAG,"I'm in worker thread");
-                while(!Thread.currentThread().isInterrupted() && !stopWorker)
+                while(!Thread.currentThread().isInterrupted() && !stopWorker) //warunek - dopóki apka się nie wywali to odbieraj dane
                 {
-                    //Log.d(TAG,"After while statement");
                     try
                     {
-                        int bytesAvailable = mmInStream.available();
-                        if(bytesAvailable > 0)
+                        int bytesAvailable = mmInStream.available(); //czy są dostępne jakieś bajty do odebrania? ile?
+                        //workerThread.sleep(30000); //w ten sposób mozesz uspic wątek na 30s, czyli będzie spał 30s, po 30s sie aktywuje
+                        if(bytesAvailable > 0 ) //jeżeli są jakieś...
                         {
-                            //Log.d(TAG,"Available data");
-                            byte[] packetBytes = new byte[bytesAvailable];
-                            mmInStream.read(packetBytes);
-                            for(int i=0;i<bytesAvailable;i++)
-                            {
-                                byte b = packetBytes[i];
-                                int [] dataInt = new int [packetBytes.length];
-                                Log.d(TAG,"Długość: "+packetBytes.length);
-                                if(packetBytes.length>0) {
-                                    for(int j=0; j<packetBytes.length;j++){
-                                        dataInt[j]=packetBytes[j];}
-
-                                    Log.d(TAG,Arrays.toString(dataInt));
+                            byte[] packetBytes = new byte[bytesAvailable]; //utwórz tablicę bajtów o długości przychdozących danych
+                            mmInStream.read(packetBytes); //odbierz je jako tablicę
+                            int[] dataInt = new int[packetBytes.length]; //stwórz tablicę int
+                            Log.d(TAG, "Długość: " + packetBytes.length); //to jest tylko do debugowania, w okienku Logcat na dole
+                            //pokaze ci się długość tablicy z odebranymi danymi; TAG - zmienna typu String którą wpisujesz w lupce w okienku Logcat
+                            //aby znaleźć wiadomosć msg; ja używam zawsze nazwy klasy (np. DataActivity) żeby wiedzieć w której klasie jestem
+                            if (packetBytes.length > 0) { //dla całej długosci tablicy packetBytes
+                                for (int j = 0; j < packetBytes.length; j++) {
+                                    dataInt[j] = packetBytes[j]& 0xFF; //przepisuje bajty na inty i zapisuje do tablicy dataInt
                                 }
-
-                                for (int k : dataInt)
-                                {
+                                    Log.d(TAG, Arrays.toString(dataInt)); //sprawdzam w Logcat jak wyglądają dane w dataInt
+                                }
+                                for (int k : dataInt) { //przepisanie tablicy dataInt na ArrayList airFlowTab aby łatwiej mi było ywkonywać później operacje
                                     airFlowTab.add(k);
                                 }
-                                SendArray("AIRFLOW_VALUE", airFlowTab, airFlowIntent);
-
-                                dataInt = null;
+                                SendArray("AIRFLOW_VALUE", airFlowTab, airFlowIntent); //wysyłam tablice airFlowTab do klasy AiFlowChart
+                                dataInt = null; //czyszcze obie tablice
                                 airFlowTab.clear();
+                            //}
 //                                if(b == delimiter)
 //                                {
 //                                    byte[] encodedBytes = new byte[readBufferPosition];
@@ -266,16 +261,17 @@ public class DataActivity extends AppCompatActivity {
 //                                    readBuffer[readBufferPosition++] = b;
 //                                }
                             }
-                        }
-                        workerThread.sleep(1000);
+                        //}
+                        //workerThread.sleep(1000);
                     }
                     catch (IOException ex)
                     {
                         Log.d(TAG,"Stop the thread");
                         stopWorker = true;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
                     }
+//                    catch (InterruptedException e) {
+//                        e.printStackTrace();
+//                    }
                 }
             }
         });
