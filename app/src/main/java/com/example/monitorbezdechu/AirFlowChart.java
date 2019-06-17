@@ -191,10 +191,7 @@ public class AirFlowChart extends AppCompatActivity {
             Nn = Nn+1;
         } else {Nn=Nn;}
         int N=(int)Nn;
-//        Log.d(TAG, String.valueOf(Nn));
-//        Log.d(TAG, String.valueOf(N));
         ArrayList <Double> n = new ArrayList<Double>(Collections.nCopies(N, 0.0));
-        //Log.d(TAG, String.valueOf(n.size()));
         n.set(0,0.0);
         for(int i=0;i<n.size()-1;i++){
             n.set(i+1,i+1.0);
@@ -221,15 +218,7 @@ public class AirFlowChart extends AppCompatActivity {
         Log.d(TAG,"Wynik: "+wynik);
         return wynik;
     }
-
-    public static double mean(double[] m) {
-        double sum = 0;
-        for (int i = 0; i < m.length; i++) {
-            sum += m[i];
-        }
-        return sum / m.length;
-    }
-
+    
     int PickDetection(ArrayList<Double> sygnal) {
         //zwraca ile razy sredni poziom sygnalu zostal przekroczony
         //w sygnale, co mozna przetlumaczyc na liczbe pikow
