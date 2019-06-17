@@ -65,20 +65,20 @@ public class AirFlowChart extends AppCompatActivity {
             values.add(new Entry(i,(airFlowTab.get(i))));
         }
 
-        removeDataSet(chart);
-
         LineDataSet set = new LineDataSet(values, "Air Flow");
-        set.setLineWidth(2.5f);
-        set.setCircleRadius(0f);
+        set.setLineWidth(1.0f);
+        set.setDrawCircles(false);
 
         set.setColor(Color.BLUE);
         set.setCircleColor(Color.BLUE);
         set.setHighLightColor(Color.BLUE);
         set.setValueTextSize(0f);
-        set.setDrawCircleHole(true);
+        set.setDrawCircleHole(false);
         set.setCircleHoleColor(Color.BLUE);
         set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
 //        set.setValueTextColor(Color.RED);
+
+        removeDataSet(chart);
 
         data.addDataSet(set);
         data.notifyDataChanged();
@@ -90,66 +90,36 @@ public class AirFlowChart extends AppCompatActivity {
     private void addDetectedEntry() {
 
         ArrayList <Double> hann = HannWindow();
+        Log.d(TAG,"Okno Hanna" + hann);
         ArrayList <Double> splot = new ArrayList<Double>();
-//        double wynik=0;
-//        for(int n=0; n<airFlowTab.size();n++){
-//            for(int k=0; k<airFlowTab.size();k++){
-//                wynik =+ airFlowTab.get(k)*hann.get(n-k);
-//                splot.add(wynik);
-//            }
-//        }
 
-//        for (int i=0;i<airFlowTab.size();i++){
-//            hann.add(hann.size()+i,0.0);
-//        }
-//         //convolution
-//        int end = 0;
-//        while (end < airFlowTab.size()) {
-//            double sum = 0.0;
-//            for (int i = 0; i <airFlowTab.size(); i++)
-//            {
-//                sum += airFlowTab.get(i)*hann.get(end+i);
-//            }
-//            splot.add(end,sum);
-//            end = end+1;
-//        }
+        Convolve(airFlowTab,airFlowTab.size(),hann,hann.size(),splot);
+        Log.d(TAG,"Splot "+splot);
+        int liczba_pikow = PickDetection(splot);
+        Log.d(TAG,"Detekcja pików: "+liczba_pikow);
+        //pick_number.setText(liczba_pikow);
+    }
 
-//        int liczba_pikow = PickDetection(splot);
-//        Log.d(TAG,"Detekcja pików: "+liczba_pikow);
-//        pick_number.setText(liczba_pikow);
-//        LineData data = airFlow_chart.getData();
-//
-//        if (data == null) {
-//            data = new LineData();
-//            airFlow_chart.setData(new LineData());
-//        }
-//
-//        ArrayList<Entry> values = new ArrayList<>();
-//
-//        for (int i = 0; i < airFlowTab.size(); i++) {
-//            values.add(new Entry(i,(airFlowTab.get(i))));
-//        }
-//
-//        removeDataSet(airFlow_chart);
-//
-//        LineDataSet set = new LineDataSet(values, "Kąt pomocniczy przód-tył");
-//        set.setLineWidth(2.5f);
-//        set.setCircleRadius(4.5f);
-//
-//        set.setColor(Color.RED);
-//        set.setCircleColor(Color.RED);
-//        set.setDrawCircleHole(true);
-//        set.setCircleHoleColor(Color.RED);
-//        set.setHighLightColor(Color.RED);
-//        set.setValueTextSize(0f);
-//        set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-//        //set.setDrawCubic(false);
-////        set.setValueTextColor(Color.RED);
-//
-//        data.addDataSet(set);
-//        data.notifyDataChanged();
-//        airFlow_chart.notifyDataSetChanged();
-//        airFlow_chart.invalidate();
+    void Convolve(ArrayList <Integer> Signal, int SignalLen,
+                  ArrayList <Double> Kernel, int KernelLen,
+                  ArrayList <Double> Result)
+    {
+        for (int n = 0; n < SignalLen + KernelLen - 1; n++)
+        {
+            int kmin, kmax, k;
+
+            Result.add(n,0.0);
+
+            kmin = (n >= KernelLen - 1) ? n - (KernelLen - 1) : 0;
+            kmax = (n < SignalLen - 1) ? n : SignalLen - 1;
+
+            double suma =0;
+            for (k = kmin; k <= kmax; k++)
+            {
+                suma+=Signal.get(k) * Kernel.get(n-k);
+                Result.set(n,suma);
+            }
+        }
     }
 
     private void removeDataSet(LineChart chart) {
@@ -171,72 +141,37 @@ public class AirFlowChart extends AppCompatActivity {
         pick = findViewById(R.id.pick);
         pick_number = findViewById(R.id.pick_number);
 
-        //airFlow_chart=(LineChart) findViewById(R.id.airFlow_chart);
-
         airFlowIntentFilter = new IntentFilter("AirFlowTab");
 
         chart.setKeepPositionOnRotation(true);
-//        airFlow_chart.setKeepPositionOnRotation(true);
-
         chart.getDescription().setEnabled(true);
         chart.getDescription().setText("");
-  //      airFlow_chart.getDescription().setEnabled(true);
-    //    airFlow_chart.getDescription().setText("");
 
         LineData data = new LineData();
         chart.setData(data);
-        LineData data2 = new LineData();
-        //airFlow_chart.setData(data2);
 
         YAxis leftAxis = chart.getAxisLeft();
         leftAxis.setDrawGridLines(false); // no grid lines
         leftAxis.setDrawZeroLine(true);   //draw a zero line
-        leftAxis.setAxisMinimum(0f); // start at -180
-        leftAxis.setAxisMaximum(100f); // the axis maximum is 180
+        leftAxis.setAxisMinimum(0f); // start at 0
+        leftAxis.setAxisMaximum(255f); // the axis maximum is 180
 
         YAxis rightAxis = chart.getAxisRight();
         rightAxis.setDrawGridLines(false); // no grid lines
         rightAxis.setDrawZeroLine(true);   //draw a zero line
-        rightAxis.setAxisMinimum(0f); // start at -180
-        rightAxis.setAxisMaximum(100f); // the axis maximum is 180
+        rightAxis.setAxisMinimum(0f); // start at 0
+        rightAxis.setAxisMaximum(255f); // the axis maximum is 180
 
         XAxis xAxis = chart.getXAxis();
         xAxis.setDrawGridLines(false); //no grid lines
         xAxis.setPosition(XAxis.XAxisPosition.BOTTOM); //x axis on the bottom of chart
 
-//        YAxis leftTiltAxis = airFlow_chart.getAxisLeft();
-//        leftTiltAxis.setDrawGridLines(false); // no grid lines
-//        leftTiltAxis.setDrawZeroLine(true);   //draw a zero line
-//        leftTiltAxis.setAxisMinimum(0f); // start at -180
-//        leftTiltAxis.setAxisMaximum(100f); // the axis maximum is 180
-//
-//        YAxis rightTiltAxis = airFlow_chart.getAxisRight();
-//        rightTiltAxis.setDrawGridLines(false); // no grid lines
-//        rightTiltAxis.setDrawZeroLine(true);   //draw a zero line
-//        rightTiltAxis.setAxisMinimum(0f); // start at -180
-//        rightTiltAxis.setAxisMaximum(100f); // the axis maximum is 180
-//
-//        XAxis xTiltAxis = airFlow_chart.getXAxis();
-//        xTiltAxis.setDrawGridLines(false); //no grid lines
-//        xTiltAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-
         registerReceiver(airFlowReceiver, airFlowIntentFilter);
-    }
-
-    public static int[] addPos(int[] a, int pos, int num) {
-        int[] result = new int[a.length];
-        for(int i = 0; i < pos; i++)
-            result[i] = a[i];
-        result[pos] = num;
-        for(int i = pos + 1; i < a.length; i++)
-            result[i] = a[i - 1];
-        return result;
     }
 
     ArrayList<Double> Sin (ArrayList<Double> airFlowTab1) {
         ArrayList<Double> wynik = new ArrayList<Double>(Collections.nCopies(airFlowTab1.size(), 0.0));
         for(int i=0; i<airFlowTab1.size(); i++) {
-            Log.d(TAG,"Wynik: "+wynik.toString());
             if (airFlowTab1.get(i) == 0) {
                 wynik.set(i,1.0);
             } else {
@@ -244,6 +179,7 @@ public class AirFlowChart extends AppCompatActivity {
                 wynik.set(i, wyn);
             }
         }
+        Log.d(TAG,"Sin: "+wynik.toString());
         return wynik;
     }
 
@@ -255,10 +191,10 @@ public class AirFlowChart extends AppCompatActivity {
             Nn = Nn+1;
         } else {Nn=Nn;}
         int N=(int)Nn;
-        Log.d(TAG, String.valueOf(Nn));
-        Log.d(TAG, String.valueOf(N));
+//        Log.d(TAG, String.valueOf(Nn));
+//        Log.d(TAG, String.valueOf(N));
         ArrayList <Double> n = new ArrayList<Double>(Collections.nCopies(N, 0.0));
-        Log.d(TAG, String.valueOf(n.size()));
+        //Log.d(TAG, String.valueOf(n.size()));
         n.set(0,0.0);
         for(int i=0;i<n.size()-1;i++){
             n.set(i+1,i+1.0);
@@ -268,17 +204,21 @@ public class AirFlowChart extends AppCompatActivity {
         for(int i=0;i<n.size();i++) {
              okno.set(i, 0.5 * (1 - Math.cos(2 * Math.PI * n.get(i) / (Nn - 1))));
         }
+        Log.d(TAG,"Okno :" + okno);
         //iloczyn funkcji sinc i okna
         ArrayList <Double> funkcja_sinc = new ArrayList<Double>((Collections.nCopies(okno.size(), 0.0)));
         for(int i=0;i<okno.size();i++) {
-            Sin(funkcja_sinc).set(i, Math.sin(2 * fc * (n.get(i) - (Nn - 1) / 2)));
+            funkcja_sinc.set(i, Math.sin(2 * fc * (n.get(i) - (Nn - 1) / 2)));
         }
+        funkcja_sinc=Sin(funkcja_sinc);
+        Log.d(TAG,"Iloczyn funkcji sin i okna: " + funkcja_sinc);
         ArrayList <Double>wynik = new ArrayList<Double>((Collections.nCopies(okno.size(), 0.0)));
         double mnozenie;
         for (int i=0;i<okno.size();i++) {
             mnozenie = funkcja_sinc.get(i)*okno.get(i);
             wynik.set(i,mnozenie);
         }
+        Log.d(TAG,"Wynik: "+wynik);
         return wynik;
     }
 

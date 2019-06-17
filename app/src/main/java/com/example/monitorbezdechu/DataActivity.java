@@ -185,7 +185,7 @@ public class DataActivity extends AppCompatActivity {
         OutputStream mmOutStream;
         InputStream mmInStream;
         final Handler handler = new Handler();
-        final byte delimiter = 10; //This is the ASCII code for a newline character
+        final byte delimiter = (byte)10; //This is the ASCII code for a newline character
 
         stopWorker = false;
         readBufferPosition = 0;
@@ -211,67 +211,43 @@ public class DataActivity extends AppCompatActivity {
         {
             public void run() //tu zaczyna się odbiór danych
             {
-                while(!Thread.currentThread().isInterrupted() && !stopWorker) //warunek - dopóki apka się nie wywali to odbieraj dane
+                while (!Thread.currentThread().isInterrupted() && !stopWorker) //warunek - dopóki apka się nie wywali to odbieraj dane
                 {
-                    try
-                    {
+                    try {
                         int bytesAvailable = mmInStream.available(); //czy są dostępne jakieś bajty do odebrania? ile?
-                        //workerThread.sleep(30000); //w ten sposób mozesz uspic wątek na 30s, czyli będzie spał 30s, po 30s sie aktywuje
-                        if(bytesAvailable > 0 ) //jeżeli są jakieś...
+                        workerThread.sleep(2800); //w ten sposób mozesz uspic wątek na 30s, czyli będzie spał 30s, po 30s sie aktywuje
+                        Log.d(TAG, String.valueOf(bytesAvailable));
+                        if (bytesAvailable > 101) //jeżeli są jakieś...
                         {
                             byte[] packetBytes = new byte[bytesAvailable]; //utwórz tablicę bajtów o długości przychdozących danych
                             mmInStream.read(packetBytes); //odbierz je jako tablicę
-                            int[] dataInt = new int[packetBytes.length]; //stwórz tablicę int
-                            Log.d(TAG, "Długość: " + packetBytes.length); //to jest tylko do debugowania, w okienku Logcat na dole
-                            //pokaze ci się długość tablicy z odebranymi danymi; TAG - zmienna typu String którą wpisujesz w lupce w okienku Logcat
-                            //aby znaleźć wiadomosć msg; ja używam zawsze nazwy klasy (np. DataActivity) żeby wiedzieć w której klasie jestem
-                            if (packetBytes.length > 0) { //dla całej długosci tablicy packetBytes
-                                for (int j = 0; j < packetBytes.length; j++) {
-                                    dataInt[j] = packetBytes[j]& 0xFF; //przepisuje bajty na inty i zapisuje do tablicy dataInt
+                            int[] tab = new int[100];
+                            for (int i = 1; i < bytesAvailable; i++) {
+                                byte b = packetBytes[i];
+                                Log.d(TAG,String.valueOf(b));
+                                if (packetBytes[i] == -86) {
+                                    if (packetBytes[i - 1] == -86) {
+                                        while (bytesAvailable < 101) {
+                                            bytesAvailable = mmInStream.available();
+                                        }
+                                        for (int j = 0; j < 100; j++) {
+                                            tab[j] = packetBytes[j];
+                                        }
+                                    }
                                 }
-                                    Log.d(TAG, Arrays.toString(dataInt)); //sprawdzam w Logcat jak wyglądają dane w dataInt
-                                }
-                                for (int k : dataInt) { //przepisanie tablicy dataInt na ArrayList airFlowTab aby łatwiej mi było ywkonywać później operacje
-                                    airFlowTab.add(k);
-                                }
-                                SendArray("AIRFLOW_VALUE", airFlowTab, airFlowIntent); //wysyłam tablice airFlowTab do klasy AiFlowChart
-                                dataInt = null; //czyszcze obie tablice
-                                airFlowTab.clear();
-                            //}
-//                                if(b == delimiter)
-//                                {
-//                                    byte[] encodedBytes = new byte[readBufferPosition];
-//                                    System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
-//                                    final String data = new String(encodedBytes, "UTF-8");
-//                                    readBufferPosition = 0;
-//
-//                                    //message.setText(Arrays.toString(dataInt));
-//                                    Log.d(TAG,Arrays.toString(dataInt));
-//
-//
-//                                    handler.post(new Runnable()
-//                                    { public void run()
-//                                        {
-//                                            message.setText(data);
-//                                        }
-//                                    });
-//                                }
-//                                else{
-//                                    Log.d(TAG,"Something gone wrong");
-//                                    readBuffer[readBufferPosition++] = b;
-//                                }
                             }
-                        //}
-                        //workerThread.sleep(1000);
-                    }
-                    catch (IOException ex)
-                    {
-                        Log.d(TAG,"Stop the thread");
+                            for (int k : tab) { //przepisanie tablicy dataInt na ArrayList airFlowTab aby łatwiej mi było ywkonywać później operacje
+                                   airFlowTab.add(k&0xFF);
+                                }
+                            SendArray("AIRFLOW_VALUE", airFlowTab, airFlowIntent);
+                            airFlowTab.clear();
+                        }
+                    } catch (IOException ex) {
+                        Log.d(TAG, "Stop the thread");
                         stopWorker = true;
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
                     }
-//                    catch (InterruptedException e) {
-//                        e.printStackTrace();
-//                    }
                 }
             }
         });
