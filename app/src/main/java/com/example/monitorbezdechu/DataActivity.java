@@ -32,22 +32,18 @@ public class DataActivity extends AppCompatActivity {
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
     public static final String TAG = "DataActivity";
     private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
+
     private BluetoothSocket mSocket;
-    private Handler mHandler;
     private String mDeviceName;
     private String mDeviceAddress;
     private BluetoothAdapter mBluetoothAdapter;
     Thread workerThread;
     byte[] readBuffer;
     int readBufferPosition;
-    int counter;
     boolean stopWorker;
 
     public ArrayList <Integer> airFlowTab=new ArrayList<Integer>();
     Intent airFlowIntent;
-
-    private final static int MESSAGE_READ = 2; // used in bluetooth handler to identify message update
-    private final static int CONNECTING_STATUS = 3; // used in bluetooth handler to identify message status
 
     //@BindView(R.id.name)
     public TextView name;
@@ -58,6 +54,7 @@ public class DataActivity extends AppCompatActivity {
     //@BindView(R.id.message)
     public TextView message;
     public Button charts_btn;
+    public Button stop_btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -70,6 +67,7 @@ public class DataActivity extends AppCompatActivity {
         link_status = (TextView) findViewById(R.id.link_status);
         message = (TextView) findViewById(R.id.message);
         charts_btn = (Button) findViewById(R.id.charts_btn);
+        stop_btn = (Button) findViewById(R.id.stop_btn);
 
         final Intent intent = getIntent();
         mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
@@ -88,26 +86,19 @@ public class DataActivity extends AppCompatActivity {
                 startActivity(intent);
             }
         });
-//        mHandler = new Handler() {
-//            public void handleMessage(android.os.Message msg) {
-//                if (msg.what == MESSAGE_READ) {
-//                    String readMessage = null;
-//                    try {
-//                        readMessage = new String((byte[]) msg.obj, "UTF-8");
-//                    } catch (UnsupportedEncodingException e) {
-//                        Log.d(TAG,e.toString());
-//                    }
-//                    message.setText(readMessage);
-//                }
-//                if (msg.what == CONNECTING_STATUS) {
-//                    if (msg.arg1 == 1)
-//                        link_status.setText("Connected");
-//                    else
-//                        link_status.setText("Connection Failed");
-//                }
-//            }
 
-//        };
+        stop_btn.setOnClickListener( new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                try {
+                    mSocket.close();
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+                Intent intent = new Intent(DataActivity.this,MainActivity.class);
+                startActivity(intent);
+            }
+        });
     }
 
     private void feedMultiple() {

@@ -5,4 +5,10 @@
     <string name="none_found">Nie znaleziono urządzeń</string>
     <string name="linked">Połączono</string>
     <string name="not_linked">Nie połączono</string>
+    <string name="alarm">Alarm!</string>
+    <string name="instruction">Wykryto przerwę w oddychaniu dłuższą niż 10s!</string>
+    <string name="button">Ok</string>
+    <string name="end">Zakończ monitoring</string>
+    <string name="begin">Rozpocznij monitoring</string>
+
 </resources>
