@@ -4,73 +4,57 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 import android.content.Intent;
-import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
 import java.util.UUID;
-
-import butterknife.BindView;
-import butterknife.ButterKnife;
 
 public class DataActivity extends AppCompatActivity {
 
     public static final String EXTRAS_DEVICE_NAME = "DEVICE_NAME";
     public static final String EXTRAS_DEVICE_ADDRESS = "DEVICE_ADDRESS";
-    public static final String TAG = "DataActivity";
+    private static final String TAG = "DataActivity";
     private static final UUID uuid = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
     private BluetoothSocket mSocket;
-    private String mDeviceName;
     private String mDeviceAddress;
     private BluetoothAdapter mBluetoothAdapter;
-    Thread workerThread;
-    byte[] readBuffer;
-    int readBufferPosition;
-    boolean stopWorker;
+    private Thread workerThread;
+    private byte[] readBuffer;
+    private int readBufferPosition;
+    private boolean stopWorker;
 
-    public ArrayList <Integer> airFlowTab=new ArrayList<Integer>();
-    Intent airFlowIntent;
+    private final ArrayList <Integer> airFlowTab= new ArrayList<>();
+    private Intent airFlowIntent;
 
-    //@BindView(R.id.name)
-    public TextView name;
-    //@BindView(R.id.address)
-    public TextView address;
-    //@BindView(R.id.link_status)
-    public TextView link_status;
-    //@BindView(R.id.message)
-    public TextView message;
-    public Button charts_btn;
-    public Button stop_btn;
+    private TextView name;
+    private TextView address;
+    private TextView link_status;
+    private TextView message;
+    private Button charts_btn;
+    private Button stop_btn;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_data);
-        ButterKnife.bind(this);
 
-        name = (TextView) findViewById(R.id.name);
-        address = (TextView) findViewById(R.id.address);
-        link_status = (TextView) findViewById(R.id.link_status);
-        message = (TextView) findViewById(R.id.message);
-        charts_btn = (Button) findViewById(R.id.charts_btn);
-        stop_btn = (Button) findViewById(R.id.stop_btn);
+        name = findViewById(R.id.name);
+        address = findViewById(R.id.address);
+        link_status = findViewById(R.id.link_status);
+        message = findViewById(R.id.message);
+        charts_btn = findViewById(R.id.charts_btn);
+        stop_btn = findViewById(R.id.stop_btn);
 
         final Intent intent = getIntent();
-        mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
+        String mDeviceName = intent.getStringExtra(EXTRAS_DEVICE_NAME);
         mDeviceAddress = intent.getStringExtra(EXTRAS_DEVICE_ADDRESS);
         name.setText(mDeviceName);
         address.setText(mDeviceAddress);
@@ -79,25 +63,19 @@ public class DataActivity extends AppCompatActivity {
 
         airFlowIntent = new Intent(this,AirFlowService.class);
 
-        charts_btn.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(DataActivity.this,AirFlowChart.class);
-                startActivity(intent);
-            }
+        charts_btn.setOnClickListener(v -> {
+            Intent intent12 = new Intent(DataActivity.this,AirFlowChart.class);
+            startActivity(intent12);
         });
 
-        stop_btn.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                try {
-                    mSocket.close();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                Intent intent = new Intent(DataActivity.this,MainActivity.class);
-                startActivity(intent);
+        stop_btn.setOnClickListener(v -> {
+            try {
+                mSocket.close();
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            Intent intent1 = new Intent(DataActivity.this,MainActivity.class);
+            startActivity(intent1);
         });
     }
 
@@ -110,8 +88,6 @@ public class DataActivity extends AppCompatActivity {
                 try {
                     mSocket=device.createRfcommSocketToServiceRecord(uuid);
                     Log.d(TAG, "Create RFComm Connection");
-                    //final Method m = device.getClass().getMethod("createInsecureRfcommSocketToServiceRecord", UUID.class);
-                    //return (BluetoothSocket) m.invoke(device, uuid);
                 } catch (Exception e) {
                     fail = true;
                     Log.d(TAG, "Could not create RFComm Connection",e);
@@ -121,38 +97,29 @@ public class DataActivity extends AppCompatActivity {
                     mSocket.connect();
                     Log.d(TAG,"Connected");
                     fail=false;
-//                    mHandler.obtainMessage(CONNECTING_STATUS, 1, -1)
-//                            .sendToTarget();
                 } catch (IOException connectException) {
                     // Unable to connect; close the socket and return.
                     try {
                         mSocket = createBluetoothSocket(device);
                         mSocket.connect();
                         Log.d(TAG, "Connected");
-//                        mHandler.obtainMessage(CONNECTING_STATUS, 1, -1)
-//                                .sendToTarget();
                         fail=false;
                     } catch(IOException ee)
                     { Log.d(TAG, "Not connected");
                         try {
                             mSocket.close();
                             Log.d(TAG, connectException.toString());
-//                            mHandler.obtainMessage(CONNECTING_STATUS, -1, -1)
-//                                    .sendToTarget();
                         } catch (IOException closeException) {
                             Log.d(TAG, "Could not close the client socket", closeException);
-//                            mHandler.obtainMessage(CONNECTING_STATUS, -1, -1)
-//                                    .sendToTarget();
                         }
                     }
                 }
-                if (fail == false) {
+                if (!fail) {
                     beginListenForData();
                     Log.d(TAG, "starting beginListenForData");
-                    fail=true;
-                    link_status.setText("Connected");
+                    link_status.setText(R.string.connected);
                 } else{
-                    link_status.setText("Connection failed");
+                    link_status.setText(R.string.notconnected);
                 }
             }
         }.start();
@@ -160,7 +127,6 @@ public class DataActivity extends AppCompatActivity {
 
     private BluetoothSocket createBluetoothSocket(BluetoothDevice device) throws IOException {
         try {
-            //final Method m = device.getClass().getMethod("createRfcommSocketToServiceRecord", new Class[]{int.class});
             Log.d(TAG, "Create Insecure RFComm Connection");
             return (BluetoothSocket) device.getClass().getMethod("createRfcommSocket", new Class[]{int.class}).invoke(device, 1);
         } catch (Exception e) {
@@ -169,20 +135,17 @@ public class DataActivity extends AppCompatActivity {
         return  device.createRfcommSocketToServiceRecord(uuid);
     }
 
-    void beginListenForData()
+    private void beginListenForData()
     {
         Log.d(TAG,"Starting");
         BluetoothSocket mmSocket;
         OutputStream mmOutStream;
         InputStream mmInStream;
-        final Handler handler = new Handler();
-        final byte delimiter = (byte)10; //This is the ASCII code for a newline character
 
         stopWorker = false;
         readBufferPosition = 0;
         readBuffer = new byte[1024];
 
-        mmSocket = mSocket;
         InputStream tmpIn = null;
         OutputStream tmpOut = null;
 
@@ -196,58 +159,53 @@ public class DataActivity extends AppCompatActivity {
                 Log.d(TAG, "Could not get a message",e);
             }
             mmInStream = tmpIn;
-            mmOutStream = tmpOut;
 
-        workerThread = new Thread(new Runnable()
-        {
-            public void run() //tu zaczyna się odbiór danych
+        //tu zaczyna się odbiór danych
+        workerThread = new Thread(() -> {
+            while (!Thread.currentThread().isInterrupted() && !stopWorker) //warunek - dopóki apka się nie wywali to odbieraj dane
             {
-                while (!Thread.currentThread().isInterrupted() && !stopWorker) //warunek - dopóki apka się nie wywali to odbieraj dane
-                {
-                    try {
-                        int bytesAvailable = mmInStream.available(); //czy są dostępne jakieś bajty do odebrania? ile?
-                        workerThread.sleep(2800); //w ten sposób mozesz uspic wątek na 30s, czyli będzie spał 30s, po 30s sie aktywuje
-                        Log.d(TAG, String.valueOf(bytesAvailable));
-                        if (bytesAvailable > 101) //jeżeli są jakieś...
-                        {
-                            byte[] packetBytes = new byte[bytesAvailable]; //utwórz tablicę bajtów o długości przychdozących danych
-                            mmInStream.read(packetBytes); //odbierz je jako tablicę
-                            int[] tab = new int[100];
-                            for (int i = 1; i < bytesAvailable; i++) {
-                                byte b = packetBytes[i];
-                                Log.d(TAG,String.valueOf(b));
-                                if (packetBytes[i] == -86) {
-                                    if (packetBytes[i - 1] == -86) {
-                                        while (bytesAvailable < 101) {
-                                            bytesAvailable = mmInStream.available();
-                                        }
-                                        for (int j = 0; j < 100; j++) {
-                                            tab[j] = packetBytes[j];
-                                        }
+                try {
+                    int bytesAvailable = mmInStream.available(); //czy są dostępne jakieś bajty do odebrania? ile?
+                    Thread.sleep(2800); //w ten sposób mozesz uspic wątek na 30s, czyli będzie spał 30s, po 30s sie aktywuje
+                    Log.d(TAG, String.valueOf(bytesAvailable));
+                    if (bytesAvailable > 101) //jeżeli są jakieś...
+                    {
+                        byte[] packetBytes = new byte[bytesAvailable]; //utwórz tablicę bajtów o długości przychdozących danych
+                        mmInStream.read(packetBytes); //odbierz je jako tablicę
+                        int[] tab = new int[100];
+                        for (int i = 1; i < bytesAvailable; i++) {
+                            byte b = packetBytes[i];
+                            Log.d(TAG,String.valueOf(b));
+                            if (packetBytes[i] == -86) {
+                                if (packetBytes[i - 1] == -86) {
+                                    while (bytesAvailable < 101) {
+                                        bytesAvailable = mmInStream.available();
+                                    }
+                                    for (int j = 0; j < 100; j++) {
+                                        tab[j] = packetBytes[j];
                                     }
                                 }
                             }
-                            for (int k : tab) { //przepisanie tablicy dataInt na ArrayList airFlowTab aby łatwiej mi było ywkonywać później operacje
-                                   airFlowTab.add(k&0xFF);
-                                }
-                            SendArray("AIRFLOW_VALUE", airFlowTab, airFlowIntent);
-                            airFlowTab.clear();
                         }
-                    } catch (IOException ex) {
-                        Log.d(TAG, "Stop the thread");
-                        stopWorker = true;
-                    } catch (InterruptedException e) {
-                        e.printStackTrace();
+                        for (int k : tab) { //przepisanie tablicy dataInt na ArrayList airFlowTab aby łatwiej mi było ywkonywać później operacje
+                               airFlowTab.add(k&0xFF);
+                            }
+                        SendArray(airFlowTab, airFlowIntent);
+                        airFlowTab.clear();
                     }
+                } catch (IOException ex) {
+                    Log.d(TAG, "Stop the thread");
+                    stopWorker = true;
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
             }
         });
         workerThread.start();
     }
 
-    private void SendArray (String name, ArrayList<Integer> tab, Intent intent ) {
-            intent.putExtra(name, tab);
-            //Log.d(TAG, tab.toString());
+    private void SendArray(ArrayList<Integer> tab, Intent intent) {
+            intent.putExtra("AIRFLOW_VALUE", tab);
             startService(intent);
     }
 

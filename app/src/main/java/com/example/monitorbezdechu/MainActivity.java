@@ -21,31 +21,28 @@ import android.widget.Toast;
 import java.util.ArrayList;
 import java.util.HashSet;
 
-import butterknife.BindView;
 import butterknife.ButterKnife;
-import butterknife.OnClick;
 
 public class MainActivity extends AppCompatActivity implements AdapterView.OnItemClickListener{
 
     private static final String TAG = "ConnectionActivity";
     private BluetoothAdapter mBluetoothAdapter;
-    private BluetoothDevice mBluetoothDevice;
-    public ArrayList<BluetoothDevice> devicesList = new ArrayList<>();
+    private final ArrayList<BluetoothDevice> devicesList = new ArrayList<>();
     private ArrayAdapter arrayAdapter;
-    private HashSet hashSet = new HashSet();
+    private final HashSet hashSet = new HashSet();
     private final static int REQUEST_ENABLE_BT = 1; // used to identify adding bluetooth names
 
     //@BindView(R.id.bluetooth_on_btn)
-    public Button bluetoothOnBtn;
+    private Button bluetoothOnBtn;
 //    @BindView(R.id.devices_list)
 //    ListView devicesListView;
-    public ListView devicesListView;
+private ListView devicesListView;
     //@BindView(R.id.find_devices_btn)
-    public Button findDevicesBtn;
+    private Button findDevicesBtn;
     //@BindView(R.id.no_devices)
-    public TextView noDevicesTextView;
+    private TextView noDevicesTextView;
     //@BindView(R.id.loadingPanel)
-    public RelativeLayout loadingPanel;
+    private RelativeLayout loadingPanel;
 
 
 //    @OnClick(R.id.bluetooth_on_btn)
@@ -89,52 +86,45 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
         ButterKnife.bind(this);
 
 
-        devicesListView = (ListView) findViewById(R.id.devices_list);
-        findDevicesBtn = (Button) findViewById(R.id.find_devices_btn);
-        bluetoothOnBtn = (Button) findViewById(R.id.bluetooth_on_btn);
-        noDevicesTextView = (TextView) findViewById(R.id.no_devices);
-        loadingPanel = (RelativeLayout) findViewById(R.id.loadingPanel);
+        devicesListView = findViewById(R.id.devices_list);
+        findDevicesBtn = findViewById(R.id.find_devices_btn);
+        bluetoothOnBtn = findViewById(R.id.bluetooth_on_btn);
+        noDevicesTextView = findViewById(R.id.no_devices);
+        loadingPanel = findViewById(R.id.loadingPanel);
 
         final BluetoothManager bluetoothManager = (BluetoothManager) getSystemService(Context.BLUETOOTH_SERVICE);
         mBluetoothAdapter = bluetoothManager.getAdapter();
         devicesListView.setOnItemClickListener(MainActivity.this);
 
-        bluetoothOnBtn.setOnClickListener( new View.OnClickListener() {
-
-            @Override
-            public void onClick(View v) {
-                if (mBluetoothAdapter == null) {
-                    Toast.makeText(getApplicationContext(), "Brak modułu Bluetooth", Toast.LENGTH_SHORT).show();
+        bluetoothOnBtn.setOnClickListener(v -> {
+            if (mBluetoothAdapter == null) {
+                Toast.makeText(getApplicationContext(), "Brak modułu Bluetooth", Toast.LENGTH_SHORT).show();
+            } else {
+                if (!mBluetoothAdapter.isEnabled()) {
+                    Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
+                    Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                    discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
+                    startActivity(discoverableIntent);
+                    startActivityForResult(bluetoothIntent, REQUEST_ENABLE_BT);
                 } else {
-                    if (!mBluetoothAdapter.isEnabled()) {
-                        Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-                        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-                        startActivity(discoverableIntent);
-                        startActivityForResult(bluetoothIntent, REQUEST_ENABLE_BT);
-                    } else {
-                        Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-                        discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,300);
-                        Toast.makeText(getApplicationContext(), "Bluetooth jest włączone", Toast.LENGTH_SHORT).show();
-                        startActivity(discoverableIntent);
-                    }
+                    Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
+                    discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,300);
+                    Toast.makeText(getApplicationContext(), "Bluetooth jest włączone", Toast.LENGTH_SHORT).show();
+                    startActivity(discoverableIntent);
                 }
             }
         });
 
-        findDevicesBtn.setOnClickListener( new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                devicesList.clear();
-                if (mBluetoothAdapter.isEnabled()) {
-                    loadingPanel.setVisibility(View.VISIBLE);
-                    mBluetoothAdapter.startDiscovery();
-                    registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-                    arrayAdapter = new ArrayAdapter(MainActivity.this, R.layout.device_item, devicesList);
-                    devicesListView.setAdapter(arrayAdapter);
-                } else {
-                    Toast.makeText(getApplicationContext(), "Bluetooth nie włączone", Toast.LENGTH_SHORT).show();
-                }
+        findDevicesBtn.setOnClickListener(v -> {
+            devicesList.clear();
+            if (mBluetoothAdapter.isEnabled()) {
+                loadingPanel.setVisibility(View.VISIBLE);
+                mBluetoothAdapter.startDiscovery();
+                registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
+                arrayAdapter = new ArrayAdapter(MainActivity.this, R.layout.device_item, devicesList);
+                devicesListView.setAdapter(arrayAdapter);
+            } else {
+                Toast.makeText(getApplicationContext(), "Bluetooth nie włączone", Toast.LENGTH_SHORT).show();
             }
         });
     }
@@ -142,7 +132,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     @Override
     public void onItemClick(AdapterView<?> adapterView, View view, int i, long l) {
         mBluetoothAdapter.cancelDiscovery();
-        mBluetoothDevice = devicesList.get(i);
+        BluetoothDevice mBluetoothDevice = devicesList.get(i);
         mBluetoothDevice.createBond();
         devicesList.clear();
         arrayAdapter.notifyDataSetChanged();
@@ -163,7 +153,7 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
                 loadingPanel.setVisibility(View.GONE);
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
                 Log.d(TAG,"Devices found " + device.getAddress());
-                if(hashSet.contains(device.getAddress())==false){
+                if(!hashSet.contains(device.getAddress())){
                     hashSet.add(device.getAddress());
                     arrayAdapter.add(device);
                     arrayAdapter.notifyDataSetChanged();

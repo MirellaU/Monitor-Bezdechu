@@ -7,8 +7,10 @@
     <string name="not_linked">Nie połączono</string>
     <string name="alarm">Alarm!</string>
     <string name="instruction">Wykryto przerwę w oddychaniu dłuższą niż 10s!</string>
-    <string name="button">Ok</string>
+    <string name="button">OK</string>
     <string name="end">Zakończ monitoring</string>
     <string name="begin">Rozpocznij monitoring</string>
+    <string name="connected">Connected</string>
+    <string name="notconnected">Connection failed</string>
 
 </resources>

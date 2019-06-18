@@ -13,7 +13,6 @@ import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
-import android.widget.TextView;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.XAxis;
@@ -29,21 +28,21 @@ import butterknife.ButterKnife;
 
 public class AirFlowChart extends AppCompatActivity {
 
-    public static final String TAG = "airFlowChartActivity";
-    public static String ROLL_VALUE = "AirFlowTab";
-    public ArrayList<Integer> airFlowTab = new ArrayList<Integer>();
-    IntentFilter airFlowIntentFilter;
-    Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_RINGTONE);
-    Ringtone r;
-    int pick_number;
-    int n=0;
+    private static final String TAG = "airFlowChartActivity";
+    private static final String ROLL_VALUE = "AirFlowTab";
+    private ArrayList<Integer> airFlowTab = new ArrayList<>();
+    private IntentFilter airFlowIntentFilter;
+    private final Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
+    private Ringtone r;
+    private int pick_number;
+    private int n=0;
 
     //@BindView(R.id.chart)
-    LineChart chart;
+    private LineChart chart;
     //@BindView(R.id.airFlow_chart)
-    LineChart airFlow_chart;
+    private LineChart airFlow_chart;
 
-    private BroadcastReceiver airFlowReceiver = new BroadcastReceiver() {
+    private final BroadcastReceiver airFlowReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             if(intent.getAction().equals(ROLL_VALUE)) {
@@ -94,7 +93,7 @@ public class AirFlowChart extends AppCompatActivity {
     private void addDetectedEntry() {
         ArrayList <Double> hann = HannWindow();
         Log.d(TAG,"Okno Hanna" + hann);
-        ArrayList <Double> splot = new ArrayList<Double>();
+        ArrayList <Double> splot = new ArrayList<>();
 
         Convolve(airFlowTab,airFlowTab.size(),hann,hann.size(),splot);
         Log.d(TAG,"Splot "+splot);
@@ -145,12 +144,10 @@ public class AirFlowChart extends AppCompatActivity {
                     alertDialog.setTitle(getString(R.string.alarm));
                     alertDialog.setMessage(getString(R.string.instruction));
                     alertDialog.setButton(AlertDialog.BUTTON_NEUTRAL, getString(R.string.button),
-                            new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int which) {
-                            dialog.dismiss();
-                            r.stop();
-                        }
-                    });
+                            (dialog, which) -> {
+                                dialog.dismiss();
+                                r.stop();
+                            });
                     alertDialog.show();
                 } catch (Exception e) {
                     e.printStackTrace();
@@ -163,9 +160,9 @@ public class AirFlowChart extends AppCompatActivity {
         }
     }
 
-    void Convolve(ArrayList <Integer> Signal, int SignalLen,
-                  ArrayList <Double> Kernel, int KernelLen,
-                  ArrayList <Double> Result)
+    private void Convolve(ArrayList<Integer> Signal, int SignalLen,
+                          ArrayList<Double> Kernel, int KernelLen,
+                          ArrayList<Double> Result)
     {
         for (int n = 0; n < SignalLen + KernelLen - 1; n++)
         {
@@ -200,8 +197,8 @@ public class AirFlowChart extends AppCompatActivity {
         setContentView(R.layout.activity_air_flow_chart);
         ButterKnife.bind(this);
 
-        chart=(LineChart) findViewById(R.id.chart);
-        airFlow_chart=(LineChart)findViewById(R.id.airFlow_chart);
+        chart= findViewById(R.id.chart);
+        airFlow_chart= findViewById(R.id.airFlow_chart);
 
         airFlowIntentFilter = new IntentFilter("AirFlowTab");
 
@@ -253,8 +250,8 @@ public class AirFlowChart extends AppCompatActivity {
         registerReceiver(airFlowReceiver, airFlowIntentFilter);
     }
 
-    ArrayList<Double> Sin (ArrayList<Double> airFlowTab1) {
-        ArrayList<Double> result = new ArrayList<Double>(Collections.nCopies(airFlowTab1.size(), 0.0));
+    private ArrayList<Double> Sin(ArrayList<Double> airFlowTab1) {
+        ArrayList<Double> result = new ArrayList<>(Collections.nCopies(airFlowTab1.size(), 0.0));
         for(int i=0; i<airFlowTab1.size(); i++) {
             if (airFlowTab1.get(i) == 0) {
                 result.set(i,1.0);
@@ -267,7 +264,7 @@ public class AirFlowChart extends AppCompatActivity {
         return result;
     }
 
-    ArrayList <Double> HannWindow () {
+    private ArrayList <Double> HannWindow() {
         double fc=0.025;
         double b = 0.174;
         double Nn = Math.round((4 / b));
@@ -275,25 +272,25 @@ public class AirFlowChart extends AppCompatActivity {
             Nn = Nn+1;
         } else {Nn=Nn;}
         int N=(int)Nn;
-        ArrayList <Double> n = new ArrayList<Double>(Collections.nCopies(N, 0.0));
+        ArrayList <Double> n = new ArrayList<>(Collections.nCopies(N, 0.0));
         n.set(0,0.0);
         for(int i=0;i<n.size()-1;i++){
             n.set(i+1,i+1.0);
         }
         //macierz okna Hanna
-        ArrayList <Double> window = new ArrayList<Double>((Collections.nCopies(n.size(), 0.0)));
+        ArrayList <Double> window = new ArrayList<>((Collections.nCopies(n.size(), 0.0)));
         for(int i=0;i<n.size();i++) {
             window.set(i, 0.5 * (1 - Math.cos(2 * Math.PI * n.get(i) / (Nn - 1))));
         }
         Log.d(TAG,"Okno :" + window);
         //iloczyn funkcji sinc i okna
-        ArrayList <Double> funkction_sinc = new ArrayList<Double>((Collections.nCopies(window.size(), 0.0)));
+        ArrayList <Double> funkction_sinc = new ArrayList<>((Collections.nCopies(window.size(), 0.0)));
         for(int i=0;i<window.size();i++) {
             funkction_sinc.set(i, Math.sin(2 * fc * (n.get(i) - (Nn - 1) / 2)));
         }
         funkction_sinc=Sin(funkction_sinc);
         Log.d(TAG,"Iloczyn funkcji sin i okna: " + funkction_sinc);
-        ArrayList <Double>result = new ArrayList<Double>((Collections.nCopies(window.size(), 0.0)));
+        ArrayList <Double>result = new ArrayList<>((Collections.nCopies(window.size(), 0.0)));
         double mnozenie;
         for (int i=0;i<window.size();i++) {
             mnozenie = funkction_sinc.get(i)*window.get(i);
@@ -303,7 +300,7 @@ public class AirFlowChart extends AppCompatActivity {
         return result;
     }
 
-    int PickDetection(ArrayList<Double> signal) {
+    private int PickDetection(ArrayList<Double> signal) {
         //zwraca ile razy sredni poziom sygnalu zostal przekroczony
         //w sygnale, co mozna przetlumaczyc na liczbe pikow
         int sum = 0;
