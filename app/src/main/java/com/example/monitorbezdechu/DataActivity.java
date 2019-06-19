@@ -187,11 +187,7 @@ public class DataActivity extends AppCompatActivity {
                                 }
                             }
                         }
-                        for (int k : tab) { //przepisanie tablicy dataInt na ArrayList airFlowTab aby łatwiej mi było ywkonywać później operacje
-                               airFlowTab.add(k&0xFF);
-                            }
-                        SendArray(airFlowTab, airFlowIntent);
-                        airFlowTab.clear();
+                        FillArray(tab);
                     }
                 } catch (IOException ex) {
                     Log.d(TAG, "Stop the thread");
@@ -207,6 +203,16 @@ public class DataActivity extends AppCompatActivity {
     private void SendArray(ArrayList<Integer> tab, Intent intent) {
             intent.putExtra("AIRFLOW_VALUE", tab);
             startService(intent);
+    }
+
+    private void FillArray(int[] tab) {
+        for (int k : tab) { //przepisanie tablicy dataInt na ArrayList airFlowTab aby łatwiej mi było ywkonywać później operacje
+            airFlowTab.add(k&0xFF);
+        }
+        if(airFlowTab.size()>199){
+            SendArray(airFlowTab, airFlowIntent);
+            airFlowTab.clear();
+        }
     }
 
     public void onDestroy() {

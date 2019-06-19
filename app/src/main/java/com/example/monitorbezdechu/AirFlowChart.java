@@ -34,7 +34,8 @@ public class AirFlowChart extends AppCompatActivity {
     private IntentFilter airFlowIntentFilter;
     private final Uri notification = RingtoneManager.getDefaultUri(RingtoneManager.TYPE_ALL);
     private Ringtone r;
-    private int pick_number;
+    private int pick_numbers=0;
+    private int pick_number=0;
     private int n=0;
 
     //@BindView(R.id.chart)
@@ -134,9 +135,8 @@ public class AirFlowChart extends AppCompatActivity {
         airFlow_chart.notifyDataSetChanged();
         airFlow_chart.invalidate();
 
-        if(n>6) {
-            n=0;
-            if(pick_number<=2){
+        if(n>1) {
+            if(pick_numbers<5){
                 try {
                     r= RingtoneManager.getRingtone(getApplicationContext(), notification);
                     r.play();
@@ -153,10 +153,12 @@ public class AirFlowChart extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-            pick_number=0;
+            n=0;
+            pick_numbers=0;
         } else {
             n++;
-            pick_number+=pick_number;
+            pick_numbers+=pick_number;
+            Log.d(TAG,"Pick number " + pick_numbers);
         }
     }
 
@@ -225,7 +227,7 @@ public class AirFlowChart extends AppCompatActivity {
         leftAxis2.setDrawGridLines(false); // no grid lines
         leftAxis2.setDrawZeroLine(true);   //draw a zero line
         leftAxis2.setAxisMinimum(0f); // start at 0
-        leftAxis2.setAxisMaximum(350f); // the axis maximum is 180
+        leftAxis2.setAxisMaximum(3000f); // the axis maximum is 180
 
         YAxis rightAxis = chart.getAxisRight();
         rightAxis.setDrawGridLines(false); // no grid lines
@@ -237,7 +239,7 @@ public class AirFlowChart extends AppCompatActivity {
         rightAxis2.setDrawGridLines(false); // no grid lines
         rightAxis2.setDrawZeroLine(true);   //draw a zero line
         rightAxis2.setAxisMinimum(0f); // start at 0
-        rightAxis2.setAxisMaximum(350f); // the axis maximum is 180
+        rightAxis2.setAxisMaximum(3000f); // the axis maximum is 180
 
         XAxis xAxis = chart.getXAxis();
         xAxis.setDrawGridLines(false); //no grid lines
