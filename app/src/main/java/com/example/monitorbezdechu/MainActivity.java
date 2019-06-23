@@ -30,61 +30,18 @@ public class MainActivity extends AppCompatActivity implements AdapterView.OnIte
     private final ArrayList<BluetoothDevice> devicesList = new ArrayList<>();
     private ArrayAdapter arrayAdapter;
     private final HashSet hashSet = new HashSet();
-    private final static int REQUEST_ENABLE_BT = 1; // used to identify adding bluetooth names
+    private final static int REQUEST_ENABLE_BT = 1;
 
-    //@BindView(R.id.bluetooth_on_btn)
     private Button bluetoothOnBtn;
-//    @BindView(R.id.devices_list)
-//    ListView devicesListView;
-private ListView devicesListView;
-    //@BindView(R.id.find_devices_btn)
+    private ListView devicesListView;
     private Button findDevicesBtn;
-    //@BindView(R.id.no_devices)
     private TextView noDevicesTextView;
-    //@BindView(R.id.loadingPanel)
     private RelativeLayout loadingPanel;
-
-
-//    @OnClick(R.id.bluetooth_on_btn)
-//    public void TurnBluetoothOn() {
-//        if (mBluetoothAdapter == null) {
-//            Toast.makeText(getApplicationContext(), "Brak modułu Bluetooth", Toast.LENGTH_SHORT).show();
-//        } else {
-//            if (!mBluetoothAdapter.isEnabled()) {
-//                Intent bluetoothIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE);
-//                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-//                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION, 300);
-//                startActivity(discoverableIntent);
-//                startActivityForResult(bluetoothIntent, REQUEST_ENABLE_BT);
-//            } else {
-//                Intent discoverableIntent = new Intent(BluetoothAdapter.ACTION_REQUEST_DISCOVERABLE);
-//                discoverableIntent.putExtra(BluetoothAdapter.EXTRA_DISCOVERABLE_DURATION,300);
-//                Toast.makeText(getApplicationContext(), "Bluetooth jest włączone", Toast.LENGTH_SHORT).show();
-//                startActivity(discoverableIntent);
-//            }
-//        }
-//    }
-
-//    @OnClick(R.id.find_devices_btn)
-//    public void findDevices() {
-//        devicesList.clear();
-//        if (mBluetoothAdapter.isEnabled()) {
-//            loadingPanel.setVisibility(View.VISIBLE);
-//            mBluetoothAdapter.startDiscovery();
-//            registerReceiver(broadcastReceiver, new IntentFilter(BluetoothDevice.ACTION_FOUND));
-//            arrayAdapter = new ArrayAdapter(MainActivity.this, R.layout.device_item, devicesList);
-//            devicesListView.setAdapter(arrayAdapter);
-//        } else {
-//            Toast.makeText(getApplicationContext(), "Bluetooth nie włączone", Toast.LENGTH_SHORT).show();
-//        }
-//    }
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        ButterKnife.bind(this);
-
 
         devicesListView = findViewById(R.id.devices_list);
         findDevicesBtn = findViewById(R.id.find_devices_btn);
@@ -161,7 +118,6 @@ private ListView devicesListView;
                 else {
                     Log.d(TAG,"To urządzenie " + device.getAddress() + " już jest na liście");
                 }
-//                Log.d(TAG,device.getUuids()[0].toString());
             } else if (BluetoothAdapter.ACTION_DISCOVERY_FINISHED.equals(action)) {
                 Toast.makeText(getApplicationContext(), "Wyszukiwanie zakończone", Toast.LENGTH_SHORT).show();
                 if (arrayAdapter.getCount() == 0) {

@@ -12,7 +12,6 @@ import android.widget.TextView;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.util.ArrayList;
 import java.util.UUID;
 
@@ -27,8 +26,6 @@ public class DataActivity extends AppCompatActivity {
     private String mDeviceAddress;
     private BluetoothAdapter mBluetoothAdapter;
     private Thread workerThread;
-    private byte[] readBuffer;
-    private int readBufferPosition;
     private boolean stopWorker;
 
     private final ArrayList <Integer> airFlowTab= new ArrayList<>();
@@ -64,8 +61,8 @@ public class DataActivity extends AppCompatActivity {
         airFlowIntent = new Intent(this,AirFlowService.class);
 
         charts_btn.setOnClickListener(v -> {
-            Intent intent12 = new Intent(DataActivity.this,AirFlowChart.class);
-            startActivity(intent12);
+            Intent intent_1 = new Intent(DataActivity.this,AirFlowChart.class);
+            startActivity(intent_1);
         });
 
         stop_btn.setOnClickListener(v -> {
@@ -74,8 +71,8 @@ public class DataActivity extends AppCompatActivity {
             } catch (IOException e) {
                 e.printStackTrace();
             }
-            Intent intent1 = new Intent(DataActivity.this,MainActivity.class);
-            startActivity(intent1);
+            Intent intent_2 = new Intent(DataActivity.this,MainActivity.class);
+            startActivity(intent_2);
         });
     }
 
@@ -92,13 +89,11 @@ public class DataActivity extends AppCompatActivity {
                     fail = true;
                     Log.d(TAG, "Could not create RFComm Connection",e);
                 }
-                // Establish the Bluetooth socket connection.
                 try {
                     mSocket.connect();
                     Log.d(TAG,"Connected");
                     fail=false;
                 } catch (IOException connectException) {
-                    // Unable to connect; close the socket and return.
                     try {
                         mSocket = createBluetoothSocket(device);
                         mSocket.connect();
@@ -137,41 +132,30 @@ public class DataActivity extends AppCompatActivity {
 
     private void beginListenForData()
     {
-        Log.d(TAG,"Starting");
-        BluetoothSocket mmSocket;
-        OutputStream mmOutStream;
         InputStream mmInStream;
-
         stopWorker = false;
-        readBufferPosition = 0;
-        readBuffer = new byte[1024];
 
         InputStream tmpIn = null;
-        OutputStream tmpOut = null;
 
-            // Get the input and output streams, using temp objects because
-            // member streams are final
             try {
                 tmpIn = mSocket.getInputStream();
-                tmpOut = mSocket.getOutputStream();
                 Log.d(TAG, "Get the data");
             } catch (IOException e) {
                 Log.d(TAG, "Could not get a message",e);
             }
             mmInStream = tmpIn;
 
-        //tu zaczyna się odbiór danych
         workerThread = new Thread(() -> {
-            while (!Thread.currentThread().isInterrupted() && !stopWorker) //warunek - dopóki apka się nie wywali to odbieraj dane
+            while (!Thread.currentThread().isInterrupted() && !stopWorker)
             {
                 try {
-                    int bytesAvailable = mmInStream.available(); //czy są dostępne jakieś bajty do odebrania? ile?
-                    Thread.sleep(2800); //w ten sposób mozesz uspic wątek na 30s, czyli będzie spał 30s, po 30s sie aktywuje
+                    int bytesAvailable = mmInStream.available();
+                    Thread.sleep(2800);
                     Log.d(TAG, String.valueOf(bytesAvailable));
-                    if (bytesAvailable > 101) //jeżeli są jakieś...
+                    if (bytesAvailable > 101)
                     {
-                        byte[] packetBytes = new byte[bytesAvailable]; //utwórz tablicę bajtów o długości przychdozących danych
-                        mmInStream.read(packetBytes); //odbierz je jako tablicę
+                        byte[] packetBytes = new byte[bytesAvailable];
+                        mmInStream.read(packetBytes);
                         int[] tab = new int[100];
                         for (int i = 1; i < bytesAvailable; i++) {
                             byte b = packetBytes[i];
@@ -206,7 +190,7 @@ public class DataActivity extends AppCompatActivity {
     }
 
     private void FillArray(int[] tab) {
-        for (int k : tab) { //przepisanie tablicy dataInt na ArrayList airFlowTab aby łatwiej mi było ywkonywać później operacje
+        for (int k : tab) {
             airFlowTab.add(k&0xFF);
         }
         if(airFlowTab.size()>199){

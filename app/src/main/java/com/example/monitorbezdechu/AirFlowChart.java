@@ -38,9 +38,7 @@ public class AirFlowChart extends AppCompatActivity {
     private int pick_number=0;
     private int n=0;
 
-    //@BindView(R.id.chart)
     private LineChart chart;
-    //@BindView(R.id.airFlow_chart)
     private LineChart airFlow_chart;
 
     private final BroadcastReceiver airFlowReceiver = new BroadcastReceiver() {
@@ -54,7 +52,6 @@ public class AirFlowChart extends AppCompatActivity {
         }
     };
 
-    //add data to roll graph
     private void addAirFlowEntry() {
         LineData data = chart.getData();
 
@@ -90,7 +87,6 @@ public class AirFlowChart extends AppCompatActivity {
         chart.invalidate();
     }
 
-    //add data to tilt graph
     private void addDetectedEntry() {
         ArrayList <Double> hann = HannWindow();
         Log.d(TAG,"Okno Hanna" + hann);
@@ -126,7 +122,6 @@ public class AirFlowChart extends AppCompatActivity {
         set.setDrawCircleHole(false);
         set.setCircleHoleColor(Color.BLUE);
         set.setMode(LineDataSet.Mode.CUBIC_BEZIER);
-//        set.setValueTextColor(Color.RED);
 
         removeDataSet(airFlow_chart);
 
@@ -218,36 +213,36 @@ public class AirFlowChart extends AppCompatActivity {
         airFlow_chart.setData(airFlowData);
 
         YAxis leftAxis = chart.getAxisLeft();
-        leftAxis.setDrawGridLines(false); // no grid lines
-        leftAxis.setDrawZeroLine(true);   //draw a zero line
-        leftAxis.setAxisMinimum(0f); // start at 0
-        leftAxis.setAxisMaximum(300f); // the axis maximum is 180
+        leftAxis.setDrawGridLines(false);
+        leftAxis.setDrawZeroLine(true);
+        leftAxis.setAxisMinimum(0f);
+        leftAxis.setAxisMaximum(300f);
 
         YAxis leftAxis2 = airFlow_chart.getAxisLeft();
-        leftAxis2.setDrawGridLines(false); // no grid lines
-        leftAxis2.setDrawZeroLine(true);   //draw a zero line
-        leftAxis2.setAxisMinimum(0f); // start at 0
-        leftAxis2.setAxisMaximum(3000f); // the axis maximum is 180
+        leftAxis2.setDrawGridLines(false);
+        leftAxis2.setDrawZeroLine(true);
+        leftAxis2.setAxisMinimum(0f);
+        leftAxis2.setAxisMaximum(3000f);
 
         YAxis rightAxis = chart.getAxisRight();
-        rightAxis.setDrawGridLines(false); // no grid lines
-        rightAxis.setDrawZeroLine(true);   //draw a zero line
-        rightAxis.setAxisMinimum(0f); // start at 0
-        rightAxis.setAxisMaximum(300f); // the axis maximum is 180
+        rightAxis.setDrawGridLines(false);
+        rightAxis.setDrawZeroLine(true);
+        rightAxis.setAxisMinimum(0f);
+        rightAxis.setAxisMaximum(300f);
 
         YAxis rightAxis2 = airFlow_chart.getAxisRight();
-        rightAxis2.setDrawGridLines(false); // no grid lines
-        rightAxis2.setDrawZeroLine(true);   //draw a zero line
-        rightAxis2.setAxisMinimum(0f); // start at 0
-        rightAxis2.setAxisMaximum(3000f); // the axis maximum is 180
+        rightAxis2.setDrawGridLines(false);
+        rightAxis2.setDrawZeroLine(true);
+        rightAxis2.setAxisMinimum(0f);
+        rightAxis2.setAxisMaximum(3000f);
 
         XAxis xAxis = chart.getXAxis();
-        xAxis.setDrawGridLines(false); //no grid lines
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM); //x axis on the bottom of chart
+        xAxis.setDrawGridLines(false);
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
 
         XAxis xAxis2 = airFlow_chart.getXAxis();
-        xAxis2.setDrawGridLines(false); //no grid lines
-        xAxis2.setPosition(XAxis.XAxisPosition.BOTTOM); //x axis on the bottom of chart
+        xAxis2.setDrawGridLines(false);
+        xAxis2.setPosition(XAxis.XAxisPosition.BOTTOM);
 
         registerReceiver(airFlowReceiver, airFlowIntentFilter);
     }
